@@ -1,0 +1,24 @@
+appId: com.gemini.wrapper
+productName: Gemini Wrapper
+directories:
+  output: release
+files:
+  - dist/**/*
+  - package.json
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+  - from: extensions/watermark-remover
+    to: extensions/watermark-remover
+win:
+  target: nsis
+  icon: build/icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  deleteAppDataOnUninstall: true
+  include: build/installer.nsh
+
+

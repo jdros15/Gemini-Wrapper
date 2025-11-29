@@ -1,0 +1,36 @@
+{
+  "name": "gemini-electron-wrapper",
+  "version": "1.0.0",
+  "description": "A Windows desktop wrapper for Gemini",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "npm run compile && concurrently \"npm run dev:tsc\" \"npm run dev:renderer\" \"npm run dev:main\"",
+    "dev:tsc": "tsc -w",
+    "dev:main": "cross-env NODE_ENV=development electron .",
+    "dev:renderer": "vite",
+    "build": "tsc && vite build && electron-builder",
+    "compile": "tsc"
+  },
+  "author": "JD Ros",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "concurrently": "^8.0.0",
+    "cross-env": "^7.0.0",
+    "electron": "^32.0.0",
+    "electron-builder": "^24.0.0",
+    "esbuild": "^0.27.0",
+    "javascript-obfuscator": "^4.1.1",
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
+  },
+  "dependencies": {
+    "onnxruntime-web": "^1.23.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.21.0"
+  }
+}

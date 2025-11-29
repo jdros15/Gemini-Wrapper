@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "*://*/*watermark*.png",
+      "resourceTypes": [
+        "image"
+      ]
+    }
+  }
+]

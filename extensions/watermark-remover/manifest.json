@@ -1,0 +1,85 @@
+{
+    "manifest_version": 3,
+    "name": "Watermark Remover",
+    "description": "Automatically detects and removes watermarks from downloaded images.",
+    "version": "1.0.0",
+    "permissions": [
+        "storage",
+        "activeTab",
+        "declarativeNetRequest"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "block_watermark_images",
+                "enabled": true,
+                "path": "rules/block-watermark-images.json"
+            }
+        ]
+    },
+    "web_accessible_resources": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "resources": [
+                "onnxruntime-web/ort.all.bundle.min.mjs",
+                "onnxruntime-web/ort.all.js",
+                "onnxruntime-web/ort.all.min.js",
+                "onnxruntime-web/ort.all.min.mjs",
+                "onnxruntime-web/ort.all.mjs",
+                "onnxruntime-web/ort.bundle.min.mjs",
+                "onnxruntime-web/ort.js",
+                "onnxruntime-web/ort.min.js",
+                "onnxruntime-web/ort.min.mjs",
+                "onnxruntime-web/ort.mjs",
+                "onnxruntime-web/ort.node.min.js",
+                "onnxruntime-web/ort.node.min.mjs",
+                "onnxruntime-web/ort.wasm.bundle.min.mjs",
+                "onnxruntime-web/ort.wasm.js",
+                "onnxruntime-web/ort.wasm.min.js",
+                "onnxruntime-web/ort.wasm.min.mjs",
+                "onnxruntime-web/ort.wasm.mjs",
+                "onnxruntime-web/ort.webgl.js",
+                "onnxruntime-web/ort.webgl.min.js",
+                "onnxruntime-web/ort.webgl.min.mjs",
+                "onnxruntime-web/ort.webgl.mjs",
+                "onnxruntime-web/ort.webgpu.bundle.min.mjs",
+                "onnxruntime-web/ort.webgpu.js",
+                "onnxruntime-web/ort.webgpu.min.js",
+                "onnxruntime-web/ort.webgpu.min.mjs",
+                "onnxruntime-web/ort.webgpu.mjs",
+                "onnxruntime-web/ort-wasm-simd-threaded.asyncify.mjs",
+                "onnxruntime-web/ort-wasm-simd-threaded.asyncify.wasm",
+                "onnxruntime-web/ort-wasm-simd-threaded.jsep.mjs",
+                "onnxruntime-web/ort-wasm-simd-threaded.jsep.wasm",
+                "onnxruntime-web/ort-wasm-simd-threaded.mjs",
+                "onnxruntime-web/ort-wasm-simd-threaded.wasm",
+                "lama_fp32.onnx",
+                "fetch-interceptor.js",
+                "watermark-pipeline.js",
+                "watermark.png",
+                "watermark.png"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_title": "Watermark Remover"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content-scripts/content.js"
+            ]
+        }
+    ]
+}

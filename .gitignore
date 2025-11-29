@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+release
+*.log
+
+# Large binary files
+*.exe
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# User data (settings stored here during development)
+# Uncomment if you don't want to track test settings
+# app-data
