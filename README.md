@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Gemini Wrapper](build/icon.png)
+![Gemini Wrapper](screenshot.png)
 
 **A powerful, native Windows desktop client for Google Gemini AI**
 
