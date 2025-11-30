@@ -4,7 +4,7 @@
 
 ![Gemini Wrapper](build/icon.png)
 
-**A powerful, native Windows desktop client for Google Gemini AI**
+**A powerful Windows desktop wrapper for Google Gemini AI**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Electron](https://img.shields.io/badge/Electron-32.0.0-47848F?logo=electron)](https://www.electronjs.org/)
@@ -13,32 +13,32 @@
 
 </div>
 
-## 🌟 Features
+## Features
 
-### 🚀 Quick Access
+### Quick Access
 - **Global Hotkeys**: Instant access to Gemini from anywhere with customizable keyboard shortcuts
   - Default: `Alt+G` for quick chat window
   - Default: `Ctrl+N` for new chat in main window
 - **System Tray Integration**: Always running in the background, ready when you need it
 - **Quick Window**: Lightweight, always-on-top mini window for rapid queries
 
-### 🎨 Seamless Experience
-- **Native Windows Integration**: Feels like a native Windows application
+### Seamless Experience
+- **Windows Integration**: Seamless Windows desktop experience
 - **Single Instance**: Prevents multiple instances from running simultaneously
 - **Auto-Start**: Optional launch on system startup (minimized or visible)
 - **Persistent Sessions**: Your conversations are saved and restored automatically
 
-### ⚙️ Customization
+### Customization
 - **Configurable Hotkeys**: Set your preferred keyboard shortcuts
 - **Window Preferences**: Choose startup behavior and window settings
 - **Auto-Reset Timer**: Automatically reset conversations after a specified time
 - **Always-on-Top**: Keep the quick window above other applications
 
-## 📸 Screenshots
+## Screenshots
 
 *(Add screenshots of your application here)*
 
-## 🔧 Installation
+## Installation
 
 ### Pre-built Binaries
 
@@ -73,7 +73,7 @@ npm run build
 
 The built application will be available in the `release` directory.
 
-## 🎯 Usage
+## Usage
 
 ### First Launch
 1. Launch the application
@@ -101,7 +101,7 @@ Right-click the system tray icon to:
 - Access settings
 - Quit the application
 
-## 🏗️ Architecture
+## Architecture
 
 ### Project Structure
 
@@ -147,14 +147,14 @@ Implements `app.requestSingleInstanceLock()` to ensure only one instance runs at
 #### Custom Protocol
 Registers a `gemini-resource://` protocol handler to serve local resources securely within the Gemini web view.
 
-## 🔐 Privacy & Security
+## Privacy & Security
 
 - **Automatic Watermark Removal**: Downloaded images are automatically processed to remove watermarks, all done locally on your device using advanced ML models
 - **No Data Collection**: This application does not collect or transmit any user data
 - **Session Persistence**: Uses Electron's session partitioning for isolated storage
 - **Secure Settings**: Settings are stored locally in your user data directory
 
-## ⚙️ Configuration
+## Configuration
 
 Settings are stored in JSON format at:
 ```
@@ -172,7 +172,7 @@ Settings are stored in JSON format at:
 | `quickWindowAlwaysOnTop` | boolean | `true` | Keep quick window on top |
 | `autoResetTimer` | number | `5` | Minutes before auto-reset (0 = disabled) |
 
-## 🛠️ Development
+## Development
 
 ### Development Mode
 
@@ -205,7 +205,7 @@ npm run build
 - `npm run compile` - Compile TypeScript
 - `npm run build` - Build production application
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -217,17 +217,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Google Gemini](https://gemini.google.com/) - The AI powering this application
 - [Electron](https://www.electronjs.org/) - For making cross-platform desktop apps possible
 - [ONNX Runtime](https://onnxruntime.ai/) - Cross-platform ML inference
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This is an unofficial desktop client for Google Gemini. It is not affiliated with, endorsed by, or in any way officially connected to Google LLC. Google and Gemini are trademarks of Google LLC.
 
