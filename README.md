@@ -42,7 +42,7 @@
 
 ### Pre-built Binaries
 
-1. Download the latest release from the [Releases](https://github.com/yourusername/gemini-wrapper/releases) page
+1. Download the latest release from the [Releases](https://github.com/jdros15/gemini-wrapper/releases) page
 2. Run the installer (`Gemini-Wrapper-Setup-1.0.0.exe`)
 3. Follow the installation wizard
 4. Launch Gemini Wrapper from the Start Menu or Desktop shortcut
@@ -58,7 +58,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gemini-wrapper.git
+git clone https://github.com/jdros15/gemini-wrapper.git
 cd gemini-wrapper
 
 # Install dependencies
