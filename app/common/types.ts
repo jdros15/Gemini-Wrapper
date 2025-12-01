@@ -11,6 +11,9 @@ export interface AppSettings {
     };
     startMinimized: boolean;
     autoResetTimer: number; // in minutes
+    saveLocation?: string;
+    askEverytime: boolean;
+    notificationClickAction: 'openFile' | 'openFolder';
 }
 
 export interface IElectronAPI {
@@ -21,6 +24,7 @@ export interface IElectronAPI {
     setShortcutsEnabled: (enabled: boolean) => Promise<void>;
     minimizeWindow: () => Promise<void>;
     closeWindow: () => Promise<void>;
+    selectDirectory: () => Promise<string | undefined>;
 }
 
 declare global {

@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electron', {
     openExternal: (url: string) => shell.openExternal(url),
     setShortcutsEnabled: (enabled: boolean) => ipcRenderer.invoke('set-shortcuts-enabled', enabled),
     minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+
     closeWindow: () => ipcRenderer.invoke('close-window'),
+    selectDirectory: () => ipcRenderer.invoke('select-directory'),
 });

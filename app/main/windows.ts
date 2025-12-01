@@ -62,11 +62,25 @@ export function createMainWindow() {
 
     // Open external links in default browser
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-        if (!url.startsWith('https://gemini.google.com')) {
+        const isGemini = url.startsWith('https://gemini.google.com');
+        const isGoogleAuth = url.startsWith('https://accounts.google.com');
+
+        if (!isGemini && !isGoogleAuth) {
             shell.openExternal(url);
             return { action: 'deny' };
         }
         return { action: 'allow' };
+    });
+
+    // Intercept in-page navigation to external sites
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        const isGemini = url.startsWith('https://gemini.google.com');
+        const isGoogleAuth = url.startsWith('https://accounts.google.com');
+
+        if (!isGemini && !isGoogleAuth) {
+            event.preventDefault();
+            shell.openExternal(url);
+        }
     });
 
     return mainWindow;
@@ -109,6 +123,29 @@ export function createQuickWindow() {
     });
 
     quickWindow.loadURL(GEMINI_URL);
+
+    // Open external links in default browser (for Quick Window)
+    quickWindow.webContents.setWindowOpenHandler(({ url }) => {
+        const isGemini = url.startsWith('https://gemini.google.com');
+        const isGoogleAuth = url.startsWith('https://accounts.google.com');
+
+        if (!isGemini && !isGoogleAuth) {
+            shell.openExternal(url);
+            return { action: 'deny' };
+        }
+        return { action: 'allow' };
+    });
+
+    // Intercept in-page navigation to external sites
+    quickWindow.webContents.on('will-navigate', (event, url) => {
+        const isGemini = url.startsWith('https://gemini.google.com');
+        const isGoogleAuth = url.startsWith('https://accounts.google.com');
+
+        if (!isGemini && !isGoogleAuth) {
+            event.preventDefault();
+            shell.openExternal(url);
+        }
+    });
 
     // Save bounds on move/resize with debounce
     let saveTimeout: NodeJS.Timeout;

@@ -17,6 +17,9 @@ const settingsSchema = z.object({
     }).optional(),
     startMinimized: z.boolean().default(true),
     autoResetTimer: z.number().default(5),
+    saveLocation: z.string().optional(),
+    askEverytime: z.boolean().default(true),
+    notificationClickAction: z.enum(['openFile', 'openFolder']).default('openFile'),
 });
 
 const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');

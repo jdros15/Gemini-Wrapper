@@ -197,3 +197,25 @@ input[type="checkbox"]:disabled {
 .status-message.error {
     color: var(--danger-color);
 }
+
+.browse-button {
+    background-color: var(--accent-color);
+    color: #000;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 24px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.browse-button:hover {
+    background-color: var(--accent-hover);
+}
+
+.browse-button:active {
+    transform: scale(0.98);
+}

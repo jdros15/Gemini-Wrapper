@@ -6,6 +6,10 @@ import { registerShortcuts } from './shortcuts';
 import { createMenu } from './menu';
 import { settingsManager } from '../config/settings';
 
+// Set AppUserModelID for Windows notifications
+app.setAppUserModelId('com.gemini.wrapper');
+app.setName('Google Gemini');
+
 // Track if we're actually quitting (vs just hiding to tray)
 let isQuitting = false;
 
@@ -59,6 +63,36 @@ app.whenReady().then(() => {
         }
 
         callback({ responseHeaders });
+    });
+
+    // Handle Downloads
+    session.fromPartition('persist:gemini-session').on('will-download', (event, item, webContents) => {
+        const settings = settingsManager.get();
+
+        if (!settings.askEverytime && settings.saveLocation) {
+            item.setSavePath(path.join(settings.saveLocation, item.getFilename()));
+        }
+
+        item.once('done', (event, state) => {
+            if (state === 'completed') {
+                const { Notification, shell } = require('electron');
+                const notification = new Notification({
+                    title: 'Download Complete',
+                    body: item.getFilename(),
+                });
+
+                notification.on('click', () => {
+                    const currentSettings = settingsManager.get();
+                    if (currentSettings.notificationClickAction === 'openFolder') {
+                        shell.showItemInFolder(item.getSavePath());
+                    } else {
+                        shell.openPath(item.getSavePath());
+                    }
+                });
+
+                notification.show();
+            }
+        });
     });
 
     // Register custom protocol for serving resources
@@ -185,6 +219,19 @@ ipcMain.handle('close-window', () => {
     if (window) {
         window.close();
     }
+});
+
+ipcMain.handle('select-directory', async () => {
+    const { dialog } = require('electron');
+    const window = BrowserWindow.getFocusedWindow();
+    if (!window) return undefined;
+
+    const result = await dialog.showOpenDialog(window, {
+        properties: ['openDirectory']
+    });
+
+    if (result.canceled) return undefined;
+    return result.filePaths[0];
 });
 
 export function getIsQuitting() {

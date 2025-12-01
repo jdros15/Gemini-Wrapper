@@ -6,6 +6,7 @@ const Settings: React.FC = () => {
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [originalSettings, setOriginalSettings] = useState<AppSettings | null>(null);
     const [status, setStatus] = useState<string>('');
+    const [saveLocationError, setSaveLocationError] = useState<boolean>(false);
 
     useEffect(() => {
         window.electron.getSettings().then((data) => {
@@ -28,10 +29,26 @@ const Settings: React.FC = () => {
         if (!settings) return;
         const newSettings = { ...settings, [key]: value };
         setSettings(newSettings);
+
+        // Clear error if user checks "Ask everytime" again
+        if (key === 'askEverytime' && value === true) {
+            setSaveLocationError(false);
+            setStatus('');
+        }
     };
 
     const handleSave = () => {
         if (!settings) return;
+
+        // Validate: if askEverytime is false, saveLocation must be set
+        if (!settings.askEverytime && !settings.saveLocation) {
+            setStatus('Error: Please select a save location');
+            setSaveLocationError(true);
+            return;
+        }
+
+        setSaveLocationError(false);
+
         window.electron.updateSettings(settings)
             .then((updated) => {
                 setSettings(updated);
@@ -168,6 +185,68 @@ const Settings: React.FC = () => {
                     id="alwaysOnTop"
                 />
                 <label htmlFor="alwaysOnTop" style={{ cursor: 'pointer' }}>Quick Window Always on Top</label>
+            </div>
+
+            <div className="checkbox-group" onClick={() => handleChange('askEverytime', !settings.askEverytime)}>
+                <input
+                    type="checkbox"
+                    checked={settings.askEverytime}
+                    onChange={() => { }}
+                    id="askEverytime"
+                />
+                <label htmlFor="askEverytime" style={{ cursor: 'pointer' }}>Ask for save location every time</label>
+            </div>
+
+            {!settings.askEverytime && (
+                <div className="setting-group">
+                    <label>Default Save Location</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <input
+                            type="text"
+                            value={settings.saveLocation || ''}
+                            readOnly
+                            placeholder="Select a directory..."
+                            style={{
+                                flex: 1,
+                                borderColor: saveLocationError ? '#F2B8B5' : undefined,
+                                borderWidth: saveLocationError ? '2px' : undefined
+                            }}
+                        />
+                        <button className="browse-button" onClick={() => {
+                            window.electron.selectDirectory().then((path) => {
+                                if (path) {
+                                    handleChange('saveLocation', path);
+                                    setSaveLocationError(false);
+                                    setStatus('');
+                                }
+                            });
+                        }}>Browse</button>
+                    </div>
+                </div>
+            )}
+
+            <div className="setting-group">
+                <label>Notification Behavior</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="checkbox-group" onClick={() => handleChange('notificationClickAction', 'openFile')}>
+                        <input
+                            type="radio"
+                            name="notificationAction"
+                            checked={settings.notificationClickAction === 'openFile'}
+                            onChange={() => { }}
+                        />
+                        <label style={{ cursor: 'pointer' }}>Open image</label>
+                    </div>
+                    <div className="checkbox-group" onClick={() => handleChange('notificationClickAction', 'openFolder')}>
+                        <input
+                            type="radio"
+                            name="notificationAction"
+                            checked={settings.notificationClickAction === 'openFolder'}
+                            onChange={() => { }}
+                        />
+                        <label style={{ cursor: 'pointer' }}>Open folder</label>
+                    </div>
+                </div>
             </div>
 
             <button

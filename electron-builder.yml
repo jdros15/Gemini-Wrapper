@@ -1,9 +1,10 @@
 appId: com.gemini.wrapper
-productName: Gemini Wrapper
+productName: Google Gemini
 directories:
   output: release
 files:
   - dist/**/*
+  - "!dist/win-unpacked"
   - package.json
 extraResources:
   - from: build/icon.png
