@@ -217,7 +217,7 @@ export function createSettingsWindow() {
     const parent = (quickWindow && quickWindow.isVisible()) ? quickWindow : null;
 
     settingsWindow = new BrowserWindow({
-        width: 400,
+        width: 700,
         height: 520,
         title: 'Settings',
         autoHideMenuBar: true,

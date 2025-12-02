@@ -37,6 +37,22 @@ body {
     overflow-y: auto;
 }
 
+.settings-content {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    width: 100%;
+}
+
+.settings-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+    /* Prevent overflow */
+}
+
 /* Scrollbar styling */
 .settings-container::-webkit-scrollbar {
     width: 8px;

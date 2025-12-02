@@ -194,7 +194,7 @@ ipcMain.handle('update-settings', async (_, newSettings) => {
 ipcMain.handle('resize-window', (_, height) => {
     const settingsWindow = require('./windows').getSettingsWindow();
     if (settingsWindow) {
-        settingsWindow.setContentSize(400, height);
+        settingsWindow.setContentSize(700, height);
     }
 });
 
