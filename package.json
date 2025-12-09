@@ -1,6 +1,6 @@
 {
   "name": "gemini-electron-wrapper",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A Windows desktop wrapper for Gemini",
   "main": "dist/main/index.js",
   "scripts": {
