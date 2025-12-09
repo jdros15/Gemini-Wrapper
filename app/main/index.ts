@@ -124,12 +124,15 @@ app.whenReady().then(() => {
     createMenu();
     registerShortcuts();
 
-    // Check if launched with --hidden flag (startup)
+    // Check if we should start minimized:
+    // 1. --hidden flag passed (from login item startup)
+    // 2. OR startMinimized setting is enabled
     const isHiddenLaunch = process.argv.includes('--hidden');
+    const shouldStartMinimized = isHiddenLaunch || settings.startMinimized;
 
-    if (isHiddenLaunch) {
-        getMainWindow()?.hide();
-        console.log('App launched in hidden mode');
+    if (shouldStartMinimized) {
+        // Window is already created with show: false, just ensure it stays hidden
+        console.log('App launched in minimized/hidden mode');
     } else {
         getMainWindow()?.show();
         getMainWindow()?.focus();
