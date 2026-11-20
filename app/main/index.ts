@@ -1,10 +1,22 @@
 import { app, ipcMain, protocol, net, session, BrowserWindow } from 'electron';
 import path from 'path';
-import { createMainWindow, createQuickWindow, getMainWindow } from './windows';
+import {
+    broadcastSettings,
+    createMainWindow,
+    createSettingsWindow,
+    getMainGeminiWebContents,
+    getMainWindow,
+    getQuickGeminiWebContents,
+    getQuickWindow,
+    getSettingsWindow,
+} from './windows';
 import { createTray, destroyTray } from './tray';
-import { registerShortcuts } from './shortcuts';
+import { registerShortcuts, unregisterShortcuts } from './shortcuts';
 import { createMenu } from './menu';
+import { injectNewChat } from './injection';
+import { themeManager } from './theme';
 import { settingsManager } from '../config/settings';
+import { WindowTarget } from '../common/types';
 
 // Set AppUserModelID for Windows notifications
 app.setAppUserModelId('com.gemini.wrapper');
@@ -20,7 +32,6 @@ if (!gotTheLock) {
     app.quit();
 } else {
     app.on('second-instance', () => {
-        // Someone tried to run a second instance, focus our window instead
         const mainWindow = getMainWindow();
         if (mainWindow) {
             if (mainWindow.isMinimized()) mainWindow.restore();
@@ -33,24 +44,22 @@ if (!gotTheLock) {
 // Ensure app quits properly during uninstall
 app.on('before-quit', () => {
     isQuitting = true;
-    destroyTray(); // Destroy tray icon to prevent shutdown error
-    // Release single instance lock
+    destroyTray();
     app.releaseSingleInstanceLock();
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     const settings = settingsManager.get();
 
     // CSP Interception to allow gemini-resource://
     session.fromPartition('persist:gemini-session').webRequest.onHeadersReceived((details, callback) => {
         const responseHeaders = details.responseHeaders || {};
 
-        // Helper to inject our protocol into a directive
         const allowResource = (headerValue: string, directive: string) => {
             if (headerValue.includes(directive)) {
                 return headerValue.replace(directive, `${directive} gemini-resource:`);
             }
-            return headerValue; // If directive missing, we might need to append it, but usually it exists
+            return headerValue;
         };
 
         if (responseHeaders['content-security-policy']) {
@@ -66,14 +75,14 @@ app.whenReady().then(() => {
     });
 
     // Handle Downloads
-    session.fromPartition('persist:gemini-session').on('will-download', (event, item, webContents) => {
-        const settings = settingsManager.get();
+    session.fromPartition('persist:gemini-session').on('will-download', (_event, item) => {
+        const currentSettings = settingsManager.get();
 
-        if (!settings.askEverytime && settings.saveLocation) {
-            item.setSavePath(path.join(settings.saveLocation, item.getFilename()));
+        if (!currentSettings.askEverytime && currentSettings.saveLocation) {
+            item.setSavePath(path.join(currentSettings.saveLocation, item.getFilename()));
         }
 
-        item.once('done', (event, state) => {
+        item.once('done', (_doneEvent, state) => {
             if (state === 'completed') {
                 const { Notification, shell } = require('electron');
                 const notification = new Notification({
@@ -82,8 +91,8 @@ app.whenReady().then(() => {
                 });
 
                 notification.on('click', () => {
-                    const currentSettings = settingsManager.get();
-                    if (currentSettings.notificationClickAction === 'openFolder') {
+                    const latestSettings = settingsManager.get();
+                    if (latestSettings.notificationClickAction === 'openFolder') {
                         shell.showItemInFolder(item.getSavePath());
                     } else {
                         shell.openPath(item.getSavePath());
@@ -105,58 +114,51 @@ app.whenReady().then(() => {
         return net.fetch('file:///' + resourcePath);
     });
 
-    // Load Chrome Extension
+    // Load Chrome Extension before creating Gemini windows so declarativeNetRequest
+    // and content scripts are ready before the first navigation.
     const extensionPath = app.isPackaged
         ? path.join(process.resourcesPath, 'extensions/watermark-remover')
         : path.join(__dirname, '../../extensions/watermark-remover');
 
     const geminiSession = session.fromPartition('persist:gemini-session');
-    geminiSession.loadExtension(extensionPath)
-        .then(({ id }: { id: string }) => {
-            console.log(`Extension loaded: ${id}`);
-        })
-        .catch((err: Error) => {
-            console.error('Failed to load extension:', err);
-        });
+    try {
+        const { id } = await geminiSession.loadExtension(extensionPath);
+        console.log(`Extension loaded: ${id}`);
+    } catch (err) {
+        console.error('Failed to load extension:', err);
+    }
 
     createMainWindow();
     createTray();
     createMenu();
     registerShortcuts();
 
-    // Check if we should start minimized:
-    // 1. --hidden flag passed (from login item startup)
-    // 2. OR startMinimized setting is enabled
     const isHiddenLaunch = process.argv.includes('--hidden');
-    const shouldStartMinimized = isHiddenLaunch || settings.startMinimized;
+    const forceShow = process.argv.includes('--show');
+    const isDev = process.env.NODE_ENV === 'development';
+    const shouldStartMinimized = !forceShow && !isDev && (isHiddenLaunch || settings.startMinimized);
 
     if (shouldStartMinimized) {
-        // Window is already created with show: false, just ensure it stays hidden
         console.log('App launched in minimized/hidden mode');
     } else {
         getMainWindow()?.show();
         getMainWindow()?.focus();
     }
 
-    // Update login item settings based on preference
     const appPath = app.getPath('exe');
-
-    // If startMinimized is true, we pass --hidden.
-    // If false, we pass empty args to ensure it starts normally.
     const args = settings.startMinimized ? ['--hidden'] : [];
 
     if (app.isPackaged) {
         app.setLoginItemSettings({
             openAtLogin: settings.runOnStartup,
             path: appPath,
-            args: args
+            args: args,
         });
     }
 });
 
 app.on('window-all-closed', () => {
-    // Don't quit on window close, as we have a tray
-    // app.quit();
+    // Keep app running in system tray
 });
 
 app.on('activate', () => {
@@ -173,36 +175,35 @@ ipcMain.handle('get-settings', () => {
 ipcMain.handle('update-settings', async (_, newSettings) => {
     const updated = settingsManager.update(newSettings);
 
-    // Apply side effects
-    registerShortcuts(); // Re-register with new keys
-    createMenu(); // Rebuild menu with new hotkey display
+    registerShortcuts();
+    createMenu();
 
-    // Update login item settings based on new preference
     const args = updated.startMinimized ? ['--hidden'] : [];
-    app.setLoginItemSettings({
-        openAtLogin: updated.runOnStartup,
-        path: app.getPath('exe'),
-        args: args,
-    });
+    if (app.isPackaged) {
+        app.setLoginItemSettings({
+            openAtLogin: updated.runOnStartup,
+            path: app.getPath('exe'),
+            args: args,
+        });
+    }
 
-    // Update quick window always on top if changed
-    const quickWin = require('./windows').getQuickWindow();
-    if (quickWin) {
+    const quickWin = getQuickWindow();
+    if (quickWin && !quickWin.isDestroyed()) {
         quickWin.setAlwaysOnTop(updated.quickWindowAlwaysOnTop);
     }
 
+    broadcastSettings(updated);
     return updated;
 });
 
 ipcMain.handle('resize-window', (_, height) => {
-    const settingsWindow = require('./windows').getSettingsWindow();
-    if (settingsWindow) {
-        settingsWindow.setContentSize(700, height);
+    const settingsWindow = getSettingsWindow();
+    if (settingsWindow && !settingsWindow.isDestroyed() && typeof height === 'number' && height >= 420 && height <= 800) {
+        settingsWindow.setContentSize(780, Math.round(height));
     }
 });
 
 ipcMain.handle('set-shortcuts-enabled', (_, enabled) => {
-    const { unregisterShortcuts } = require('./shortcuts');
     if (enabled) {
         registerShortcuts();
     } else {
@@ -210,31 +211,78 @@ ipcMain.handle('set-shortcuts-enabled', (_, enabled) => {
     }
 });
 
-ipcMain.handle('minimize-window', () => {
-    const window = BrowserWindow.getFocusedWindow();
-    if (window) {
+ipcMain.handle('minimize-window', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
+    if (window && !window.isDestroyed()) {
         window.minimize();
     }
 });
 
-ipcMain.handle('close-window', () => {
-    const window = BrowserWindow.getFocusedWindow();
-    if (window) {
+ipcMain.handle('close-window', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
+    if (window && !window.isDestroyed()) {
         window.close();
     }
 });
 
-ipcMain.handle('select-directory', async () => {
+ipcMain.handle('select-directory', async (event) => {
     const { dialog } = require('electron');
-    const window = BrowserWindow.getFocusedWindow();
+    const window = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
     if (!window) return undefined;
 
     const result = await dialog.showOpenDialog(window, {
-        properties: ['openDirectory']
+        properties: ['openDirectory'],
     });
 
     if (result.canceled) return undefined;
     return result.filePaths[0];
+});
+
+// Live Gemini Theme IPC Handlers
+ipcMain.handle('get-theme', () => {
+    return themeManager.getPalette();
+});
+
+ipcMain.handle('sync-theme', async () => {
+    return themeManager.syncFromActiveGemini(true);
+});
+
+// Shell Window Actions
+ipcMain.handle('new-chat', async (_, target?: WindowTarget) => {
+    const wc = target === 'quick'
+        ? getQuickGeminiWebContents()
+        : getMainGeminiWebContents();
+    if (wc) {
+        await injectNewChat(wc);
+        wc.focus();
+    }
+});
+
+ipcMain.handle('reload-gemini', (_, target?: WindowTarget) => {
+    const wc = target === 'quick'
+        ? getQuickGeminiWebContents()
+        : getMainGeminiWebContents();
+    if (wc) {
+        wc.reload();
+    }
+});
+
+ipcMain.handle('open-settings', () => {
+    createSettingsWindow();
+});
+
+ipcMain.handle('toggle-quick-always-on-top', () => {
+    const current = settingsManager.get();
+    const nextValue = !current.quickWindowAlwaysOnTop;
+    const updated = settingsManager.update({ quickWindowAlwaysOnTop: nextValue });
+
+    const quickWin = getQuickWindow();
+    if (quickWin && !quickWin.isDestroyed()) {
+        quickWin.setAlwaysOnTop(nextValue);
+    }
+
+    broadcastSettings(updated);
+    return nextValue;
 });
 
 export function getIsQuitting() {

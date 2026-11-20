@@ -1,5 +1,11 @@
 import { Menu, BrowserWindow, app } from 'electron';
-import { createSettingsWindow, getMainWindow, getQuickWindow } from './windows';
+import {
+    createSettingsWindow,
+    getMainGeminiWebContents,
+    getMainWindow,
+    getQuickGeminiWebContents,
+    getQuickWindow,
+} from './windows';
 import { injectNewChat } from './injection';
 import { settingsManager } from '../config/settings';
 
@@ -16,19 +22,18 @@ export function createMenu() {
                     click: () => {
                         const focusedWindow = BrowserWindow.getFocusedWindow();
                         const quickWindow = getQuickWindow();
+                        const quickWc = getQuickGeminiWebContents();
                         const mainWindow = getMainWindow();
+                        const mainWc = getMainGeminiWebContents();
 
-                        if (focusedWindow && focusedWindow === quickWindow) {
-                            injectNewChat(quickWindow.webContents);
-                        } else {
-                            // Default to main window if quick window isn't focused
-                            if (mainWindow) {
-                                if (!mainWindow.isVisible()) {
-                                    mainWindow.show();
-                                }
-                                mainWindow.focus();
-                                injectNewChat(mainWindow.webContents);
+                        if (focusedWindow && focusedWindow === quickWindow && quickWc) {
+                            injectNewChat(quickWc);
+                        } else if (mainWindow && mainWc) {
+                            if (!mainWindow.isVisible()) {
+                                mainWindow.show();
                             }
+                            mainWindow.focus();
+                            injectNewChat(mainWc);
                         }
                     },
                 },
@@ -37,7 +42,15 @@ export function createMenu() {
                     accelerator: 'CmdOrCtrl+R',
                     click: () => {
                         const focusedWindow = BrowserWindow.getFocusedWindow();
-                        if (focusedWindow) {
+                        const quickWindow = getQuickWindow();
+                        const quickWc = getQuickGeminiWebContents();
+                        const mainWc = getMainGeminiWebContents();
+
+                        if (focusedWindow && focusedWindow === quickWindow && quickWc) {
+                            quickWc.reload();
+                        } else if (mainWc) {
+                            mainWc.reload();
+                        } else if (focusedWindow) {
                             focusedWindow.reload();
                         }
                     },
@@ -45,6 +58,7 @@ export function createMenu() {
                 { type: 'separator' },
                 {
                     label: 'Settings',
+                    accelerator: 'CmdOrCtrl+,',
                     click: () => {
                         createSettingsWindow();
                     },
@@ -57,7 +71,7 @@ export function createMenu() {
                     },
                 },
             ],
-        }
+        },
     ];
 
     const menu = Menu.buildFromTemplate(template);
