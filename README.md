@@ -2,14 +2,29 @@
 
 <div align="center">
 
-![Gemini Wrapper](screenshot.png)
-
 **A powerful Windows desktop wrapper for Google Gemini AI**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Electron](https://img.shields.io/badge/Electron-32.0.0-47848F?logo=electron)](https://www.electronjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react)](https://reactjs.org/)
+
+<br />
+
+<table>
+  <tr>
+    <td align="center" valign="middle">
+      <img src="main_ui_screenshot.png" alt="Quick Gemini Window" height="420" />
+      <br />
+      <sub><b>Quick Gemini Window</b></sub>
+    </td>
+    <td align="center" valign="middle">
+      <img src="settings_screenshot.png" alt="Adaptive Settings UI" height="420" />
+      <br />
+      <sub><b>Adaptive Settings UI</b></sub>
+    </td>
+  </tr>
+</table>
 
 </div>
 
@@ -18,25 +33,23 @@
 ### Quick Access
 - **Global Hotkeys**: Instant access to Gemini from anywhere with customizable keyboard shortcuts
   - Default: `Alt+G` for quick chat window
-  - Default: `Ctrl+N` for new chat in main window
+  - Default: `Ctrl+N` for new chat in the active window
 - **System Tray Integration**: Always running in the background, ready when you need it
-- **Quick Window**: Lightweight, always-on-top mini window for rapid queries
+- **Quick Window**: Lightweight, always-on-top mini window with quick pin toggle and custom title bar actions
 
 ### Seamless Experience
-- **Windows Integration**: Seamless Windows desktop experience
+- **Adaptive Live Theme**: Automatically syncs its color palette with your live Gemini theme (Dark and Light mode) via CSS token and DOM sampling
+- **Custom Title Bar**: Integrated frameless header with one-click New Chat, Pin/Unpin (Quick Window), Reload (`Ctrl+R`), and Settings (`Ctrl+,`)
 - **Single Instance**: Prevents multiple instances from running simultaneously
-- **Auto-Start**: Optional launch on system startup (minimized or visible)
+- **Auto-Start**: Optional launch on Windows startup (minimized to tray or visible)
 - **Persistent Sessions**: Your conversations are saved and restored automatically
 
 ### Customization
-- **Configurable Hotkeys**: Set your preferred keyboard shortcuts
-- **Window Preferences**: Choose startup behavior and window settings
-- **Auto-Reset Timer**: Automatically reset conversations after a specified time
-- **Always-on-Top**: Keep the quick window above other applications
-
-## Screenshots
-
-*(Add screenshots of your application here)*
+- **Modern Settings UI**: Tabbed preferences for General, Shortcuts, Downloads, and Appearance with live extracted color swatches
+- **Configurable Hotkeys**: Interactive key recorder that temporarily pauses global shortcuts for clean capture
+- **Download Preferences**: Choose between a save dialog every time or a default folder, plus click actions for download notifications
+- **Auto-Reset Timer**: Automatically start a fresh chat after an idle period (presets or custom minutes)
+- **Always-on-Top**: Keep the Quick Gemini window floating above other applications
 
 ## Installation
 
@@ -84,15 +97,15 @@ The built application will be available in the `release` directory.
 ### Quick Window
 - Press `Alt+G` (or your custom hotkey) to toggle the quick chat window
 - Type your query and get instant responses
-- The window stays on top of other applications for easy access
+- Use the pin icon in the title bar to toggle always-on-top behavior
 
 ### Settings
-- Click the settings icon in the system tray
+- Click the gear icon in the title bar (`Ctrl+,`) or open Settings from the system tray
 - Configure:
-  - Global hotkeys
-  - Startup behavior
-  - Window preferences
-  - Auto-reset timer
+  - **General**: Startup behavior, always-on-top pinning, and auto-reset idle timer
+  - **Shortcuts**: Global Quick Window and New Chat hotkeys
+  - **Downloads**: Default save folder and notification click action
+  - **Appearance**: Live synced Gemini color palette tokens and manual re-sync
 
 ### System Tray
 Right-click the system tray icon to:
@@ -111,15 +124,18 @@ gemini-wrapper/
 │   ├── main/           # Electron main process
 │   │   ├── index.ts    # Application entry point
 │   │   ├── windows.ts  # Window management
+│   │   ├── theme.ts    # Live Gemini palette extraction & sync
+│   │   ├── injection.ts # Script and style injections
 │   │   ├── tray.ts     # System tray integration
 │   │   ├── shortcuts.ts # Global hotkey registration
 │   │   └── menu.ts     # Application menu
 │   ├── renderer/       # React UI
 │   │   ├── Settings.tsx
-│   │   └── components/
+│   │   ├── components/ # Custom title bar and UI components
+│   │   └── hooks/      # Live theme sync hook
 │   ├── preload/        # Preload scripts for IPC
 │   ├── config/         # Settings management
-│   ├── common/         # Shared types and utilities
+│   ├── common/         # Shared types and theme palette utilities
 │   └── resources/      # Static assets
 ├── build/              # Build assets (icons, installer scripts)
 ├── dist/               # Compiled application
@@ -171,6 +187,9 @@ Settings are stored in JSON format at:
 | `startMinimized` | boolean | `true` | Start minimized to tray |
 | `quickWindowAlwaysOnTop` | boolean | `true` | Keep quick window on top |
 | `autoResetTimer` | number | `5` | Minutes before auto-reset (0 = disabled) |
+| `askEverytime` | boolean | `true` | Prompt for save location before each image download |
+| `saveLocation` | string | — | Default folder for downloaded images when `askEverytime` is `false` |
+| `notificationClickAction` | string | `openFile` | Action when clicking a download notification (`openFile` or `openFolder`) |
 
 ## Development
 
